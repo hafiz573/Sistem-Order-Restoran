@@ -1,5 +1,6 @@
 // Global variables
 let currentCategory = 'all';
+let selectedTableNumber = null; // Tambahkan variable global
 
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -69,7 +70,21 @@ function loadTables() {
             document.querySelectorAll('.table-btn:not(.occupied)').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const tableNumber = this.getAttribute('data-table');
-                    selectTable(tableNumber);
+                    // Prompt langsung saat klik meja
+                    const customerName = prompt('Please enter your name:');
+                    if (customerName && customerName.trim() !== '') {
+                        const xhr2 = new XMLHttpRequest();
+                        xhr2.open('POST', 'ajax/select_table.php', true);
+                        xhr2.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        xhr2.onload = function() {
+                            if (this.status === 200) {
+                                updateCartDisplay();
+                                closeModal();
+                                showAlert('Table selected successfully!', 'success');
+                            }
+                        };
+                        xhr2.send('table_number=' + tableNumber + '&customer_name=' + encodeURIComponent(customerName.trim()));
+                    }
                 });
             });
         }
@@ -197,24 +212,7 @@ function showTableModal() {
 // Close modal
 function closeModal() {
     document.getElementById('tableModal').classList.remove('show');
-}
-
-// Select table
-function selectTable(tableNumber) {
-    const customerName = prompt('Please enter your name:');
-    if (customerName && customerName.trim() !== '') {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'ajax/select_table.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onload = function() {
-            if (this.status === 200) {
-                updateCartDisplay();
-                closeModal();
-                showAlert('Table selected successfully!', 'success');
-            }
-        };
-        xhr.send('table_number=' + tableNumber + '&customer_name=' + encodeURIComponent(customerName.trim()));
-    }
+    selectedTableNumber = null; // Reset saat modal ditutup
 }
 
 // Place order
